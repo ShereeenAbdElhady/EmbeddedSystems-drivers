@@ -36,6 +36,7 @@
 #define NVIC_u8_EXTI2_INDEX           (u8)8
 #define NVIC_u8_EXTI3_INDEX           (u8)9
 #define NVIC_u8_EXTI4_INDEX           (u8)10
+#define NVIC_u8_UART2_INDEX           (u8)38
 
 /* External interrupts priorities definitions         */
 #define NVIC_u8_EXTI0_PRIORITY        (u8)13
@@ -43,6 +44,7 @@
 #define NVIC_u8_EXTI2_PRIORITY        (u8)15
 #define NVIC_u8_EXTI3_PRIORITY        (u8)16
 #define NVIC_u8_EXTI4_PRIORITY        (u8)17
+#define NVIC_u8_UART2_PRIORITY        (u8)45
 
 
 

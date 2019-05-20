@@ -27,6 +27,8 @@
 #define RCC_u8_GPIOB  (u8)1
 #define RCC_u8_GPIOC  (u8)2
 #define RCC_u8_GPIOD  (u8)3
+#define RCC_u8_UART2  (u8)4
+#define RCC_u8_AFIO   (u8)5
 
 /* clock state definitions               */
 #define RCC_u8_ENABLE_CLK  (u8)1

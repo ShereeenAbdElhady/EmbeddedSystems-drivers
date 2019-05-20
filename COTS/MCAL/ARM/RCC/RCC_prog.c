@@ -56,7 +56,7 @@ void RCC_vidinit(void)
 	//while( ( BITCALC_GET_BIT(RCC->CR.FourByteAccess,RCC_u8_HSERDY_PIN) ) ) {}
 	/******************************************************************************************************/
 
-	                     /*********************** HSI***************************/
+	/*********************** HSI***************************/
 	/* if the HSI is enabled then set it's bit and wait for it's flag to be ready                         */
 	if(RCC_u8_HSI_CLK_STATUS == RCC_u8_ENABLE)
 	{
@@ -66,7 +66,7 @@ void RCC_vidinit(void)
 		while( !( BITCALC_GET_BIT(RCC->CR.FourByteAccess,RCC_u8_HSIRDY_PIN) ) ) {}
 	}
 
-	                     /*********************** HSE ***************************/
+	/*********************** HSE ***************************/
 	/* if the HSE is enabled then set it's bit and wait for it's flag to be ready                           */
 	if(RCC_u8_HSE_CLK_STATUS == RCC_u8_ENABLE)
 	{
@@ -76,11 +76,11 @@ void RCC_vidinit(void)
 		while( !( BITCALC_GET_BIT(RCC->CR.FourByteAccess,RCC_u8_HSERDY_PIN) ) ) {}
 	}
 
-	                    /*********************** PLL ***************************/
+	/*********************** PLL ***************************/
 	/* if the PLL is enabled do the following logic                                                          */
 	if(RCC_u8_PLL_CLK_STATUS == RCC_u8_ENABLE)
 	{
-		                    /****************** PLL source ******************/
+		/****************** PLL source ******************/
 		/* check for the PLL clk entry if it is HSI then make sure that it is enabled and it's flag is ready */
 		if (RCC_u8_PLLSRC == RCC_u8_PLL_INPUT_CLK_HSI)
 		{
@@ -110,39 +110,39 @@ void RCC_vidinit(void)
 			BITCALC_SET_BIT(RCC->CFGR.FourByteAccess,RCC_u8_PLLSRC_PIN);
 		}
 
-		             /****************** PLL multiplication factor ******************/
+		/****************** PLL multiplication factor ******************/
 		/* set the PLL multiplication factor                                                                */
 		BITCALC_ASSIGN_BIT(RCC->CFGR.FourByteAccess,RCC_u8_PLLMUL_PIN18,BITCALC_GET_BIT( RCC_u8_4PIN_PLL_MUL,0));
 		BITCALC_ASSIGN_BIT(RCC->CFGR.FourByteAccess,RCC_u8_PLLMUL_PIN19,BITCALC_GET_BIT( RCC_u8_4PIN_PLL_MUL,1));
 		BITCALC_ASSIGN_BIT(RCC->CFGR.FourByteAccess,RCC_u8_PLLMUL_PIN20,BITCALC_GET_BIT( RCC_u8_4PIN_PLL_MUL,2));
 		BITCALC_ASSIGN_BIT(RCC->CFGR.FourByteAccess,RCC_u8_PLLMUL_PIN21,BITCALC_GET_BIT( RCC_u8_4PIN_PLL_MUL,3));
 
-		                    /****************** PLL enable ******************/
+		/****************** PLL enable ******************/
 		/*set this bit (PLLON) with one (PLL clock enable)                                                 */
 		BITCALC_SET_BIT(RCC->CR.FourByteAccess,RCC_u8_PLLON_PIN);
 		/* Wait until the PLL Ready flag equals one                                                        */
 		while( !( BITCALC_GET_BIT(RCC->CR.FourByteAccess,RCC_u8_PLLRDY_PIN) ) ) {}
 	}
 
-	                   /****************** system clock selection ******************/
+	/****************** system clock selection ******************/
 	/* Select HSI as system clock                                                                         */
 	BITCALC_ASSIGN_NIBBLE(RCC->CFGR.FourByteAccess,RCC_u8_SYSCLK_NIBLLE_NUM ,RCC_u8_2PIN_SYSCLK_SOURCE);
 
-	                      /****************** AHB Prescaler ******************/
+	/****************** AHB Prescaler ******************/
 	/* assign the AHB prescaler with the configured value                                                 */
 	BITCALC_ASSIGN_NIBBLE(RCC->CFGR.FourByteAccess,RCC_u8_AHB_PRESCALER_NIBLLE_NUM,RCC_u8_4PIN_AHB_PRESCALER);
 
-	                     /****************** APB1 Prescaler ******************/
+	/****************** APB1 Prescaler ******************/
 	/* assign the APB1 prescaler with the configured value                                                  */
 	BITCALC_ASSIGN_BIT(RCC->CFGR.FourByteAccess,RCC_u8_APB1PRE_PIN8,BITCALC_GET_BIT( RCC_u8_3PIN_APB1_PRESCALER,0));
 	BITCALC_ASSIGN_BIT(RCC->CFGR.FourByteAccess,RCC_u8_APB1PRE_PIN9,BITCALC_GET_BIT( RCC_u8_3PIN_APB1_PRESCALER,1));
 	BITCALC_ASSIGN_BIT(RCC->CFGR.FourByteAccess,RCC_u8_APB1PRE_PIN10,BITCALC_GET_BIT( RCC_u8_3PIN_APB1_PRESCALER,2));
 
-                         /****************** APB2 Prescaler ******************/
-    /* assign the APB2 prescaler with the configured value                                                  */
-    BITCALC_ASSIGN_BIT(RCC->CFGR.FourByteAccess,RCC_u8_APB2PRE_PIN11,BITCALC_GET_BIT( RCC_u8_3PIN_APB2_PRESCALER,0));
-    BITCALC_ASSIGN_BIT(RCC->CFGR.FourByteAccess,RCC_u8_APB2PRE_PIN12,BITCALC_GET_BIT( RCC_u8_3PIN_APB2_PRESCALER,1));
-    BITCALC_ASSIGN_BIT(RCC->CFGR.FourByteAccess,RCC_u8_APB2PRE_PIN13,BITCALC_GET_BIT( RCC_u8_3PIN_APB2_PRESCALER,2));
+	/****************** APB2 Prescaler ******************/
+	/* assign the APB2 prescaler with the configured value                                                  */
+	BITCALC_ASSIGN_BIT(RCC->CFGR.FourByteAccess,RCC_u8_APB2PRE_PIN11,BITCALC_GET_BIT( RCC_u8_3PIN_APB2_PRESCALER,0));
+	BITCALC_ASSIGN_BIT(RCC->CFGR.FourByteAccess,RCC_u8_APB2PRE_PIN12,BITCALC_GET_BIT( RCC_u8_3PIN_APB2_PRESCALER,1));
+	BITCALC_ASSIGN_BIT(RCC->CFGR.FourByteAccess,RCC_u8_APB2PRE_PIN13,BITCALC_GET_BIT( RCC_u8_3PIN_APB2_PRESCALER,2));
 }
 
 
@@ -173,6 +173,14 @@ u8 RCC_u8EnablePeripheralClock(u8 Copy_u8Peripheral , u8 Copy_u8State)
 	/****** PORTD******/
 	/*set the sixth bit in APB2 peripheral clock enable register with one (IO PORT D clock enable)   */
 	case RCC_u8_GPIOD : RCC->APB2ENR.BitAccess.Bit5 = Copy_u8State;
+	break;
+	/****** UART2******/
+	/*set bit 17 in APB1 peripheral clock enable register with one (UART2 clock enable)              */
+	case RCC_u8_UART2 : RCC->APB1ENR.BitAccess.Bit17 = Copy_u8State;
+	break;
+	/****** AFIO******/
+	/*set bit0 in APB2 peripheral clock enable register with one (alternative function IO clock enable)*/
+	case RCC_u8_AFIO  : RCC->APB2ENR.BitAccess.Bit0 = Copy_u8State;
 	break;
 	/* In case of wrong peripheral return an error and this is considered as input validation checking*/
 	default          : Local_u8Error = STD_TYPES_u8_ERROR_NOK;

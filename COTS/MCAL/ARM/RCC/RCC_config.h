@@ -30,7 +30,7 @@
 
          /**************************Private Configurations **********************************/
 /* The second preprocessor guard is for the Private configurations which will be included in the private file*/
-#ifndef RCC_PRIVATEC_CONFIG_H_
+#ifndef RCC_PRIVATE_CONFIG_H_
 #ifdef  RCC_PRIVATE_H_
 #define RCC_PRIVATE_CONFIG_H_
 
@@ -72,7 +72,7 @@
              RCC_u8_SYSCLK_DIVIDE_128
              RCC_u8_SYSCLK_DIVIDE_256
              RCC_u8_SYSCLK_DIVIDE_512                                                                            */
-#define RCC_u8_4PIN_AHB_PRESCALER     RCC_u8_SYSCLK_DIVIDE_NO
+#define RCC_u8_4PIN_AHB_PRESCALER     RCC_u8_SYSCLK_DIVIDE_8
 
 /* APB Low speed prescaler (APB1) 3 PINs configurations as it is set and cleared by the software             */
 /*to control division factor of APB Low speed clock (PCLK1)                                                  */
@@ -81,7 +81,7 @@
            RCC_u8_HCLK_DIVIDE_4
            RCC_u8_HCLK_DIVIDE_8
            RCC_u8_HCLK_DIVIDE_16                                                                             */
-#define RCC_u8_3PIN_APB1_PRESCALER   RCC_u8_HCLK_DIVIDE_NO
+#define RCC_u8_3PIN_APB1_PRESCALER    RCC_u8_HCLK_DIVIDE_8
 
 /* APB High speed prescaler (APB2) 3 PINs configurations as it is set and cleared by the software            */
 /*to control division factor of APB High speed clock (PCLK2)                                                 */
@@ -90,7 +90,7 @@
            RCC_u8_HCLK_DIVIDE_4
            RCC_u8_HCLK_DIVIDE_8
            RCC_u8_HCLK_DIVIDE_16                                                                             */
-#define RCC_u8_3PIN_APB2_PRESCALER   RCC_u8_HCLK_DIVIDE_NO
+#define RCC_u8_3PIN_APB2_PRESCALER   RCC_u8_HCLK_DIVIDE_8
 
 /* PLL entry clock source as it is set and cleared by software to select PLL clock source                    */
 /* Range :  RCC_u8_PLL_INPUT_CLK_HSI/2
