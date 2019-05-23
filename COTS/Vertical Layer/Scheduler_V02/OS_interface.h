@@ -58,6 +58,13 @@ typedef struct
 /*Number of tasks could be handled by the scheduler                                                       */
 #define OS_u8_SCHEDULER_TASKS_NUM      (u8)2
 
+/*Definitions for the task status whether it is an active task or deleted task                            */
+#define OS_u8_TASK_ACTIVE_STATUS       (u8)3
+#define OS_u8_TASK_SUPPRESSED_STATUS   (u8)4
+
+/*Flag's  values definitions                                                                             */
+#define OS_u8_FLAG_TRUE                (u8)1
+#define OS_u8_FLAG_FALSE               (u8)0
 
                                /*******APIs Prototypes ********/
 
@@ -94,11 +101,20 @@ extern u8 OS_u8CreateTask(const Task_type* Copy_PtrTask);
 /********************************************************************************************************
  * Description: Function to pause a task for multiple time of periodicity time
  *              This function is called inside  task code.
- * Outputs   :  None
+ * Outputs   :  Error state
  * Inputs    :  const Task_type* Copy_PtrTask: pointer to task structure
  *              u8 Copy_u8TimesOfPause: Number of times to pause a task (pause is multiple of periodicity)
  *******************************************************************************************************/
-extern void OS_VidPause (u8 Copy_u8TimesOfPause , const Task_type* Copy_PtrTask);
+extern u8 OS_u8Pause (u8 Copy_u8TimesOfPause ,const Task_type* Copy_PtrTask);
+
+
+/********************************************************************************************************
+ * Description: Function to delete a task by making the runnable setting it's index in the queue
+ *              with NULL and change the task state
+ * Outputs   :  Error state
+ * Inputs    :  const Task_type* Copy_PtrTask: pointer to task structure
+ *******************************************************************************************************/
+extern u8 OS_u8Delete(const Task_type* Copy_PtrTask);
 
 
 /********************************************************************************************************
@@ -108,6 +124,23 @@ extern void OS_VidPause (u8 Copy_u8TimesOfPause , const Task_type* Copy_PtrTask)
  * Inputs    :  None
  *******************************************************************************************************/
 static void OS_VidScheduler (void);
+
+
+/********************************************************************************************************
+ * Description: Function to set the scheduler's flag to call the scheduler
+ * Outputs   :  None
+ * Inputs    :  None
+ *******************************************************************************************************/
+static void OS_VidSetOsFlag (void);
+
+
+/********************************************************************************************************
+ * Description: Function to call the scheduler if the OSFlag equals to one, based on the ISR descision
+ *              Here the scheduler is in thread mode, so it can be interrupted.
+ * Outputs   :  None
+ * Inputs    :  None
+ *******************************************************************************************************/
+extern void OS_VidStartScheduler (void);
 
 
 #endif /* OS_INTERFACE_H_ */

@@ -40,6 +40,8 @@ int main (void)
 	OS_VidInitialize();
 	/*enable systick timer                                     */
 	OS_VidStart();
+	/*Start scheduler */
+	OS_VidStartScheduler ();
 	while (1)
 	{
 

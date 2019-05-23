@@ -63,5 +63,5 @@ void APP2_VidFunc(void)
 		DIO_u8SetPinValue (DIO_u8_PIN33, DIO_u8_PIN_LOW);
 		flag = 0;
 	}
-	OS_VidPause (5, &Task2);
+	OS_u8Pause (5 ,&Task2);
 }
