@@ -85,6 +85,16 @@
 
                      /******* private functions prototypes *************/
 
+/****************************************************************************************************
+ * Description:Function to Set the pointer to callback function with the address of the function
+ *              Needed to be implemented by the ISR.
+ * Outputs   : Error State
+ * Inputs    : void (*Copy_PVidFunCallback) (void): pointer to callback function to set the pointer
+ *             Value with the address of the function needed to be implemented by the ISR.
+ ***************************************************************************************************/
+static u8 UART_u8SetCallback (void (*Copy_PVidFunCallback) (void));
+
+
 /*******************************************************************************
  * Description: private function to disable the transmission complete interrupt.
  * Outputs   : None

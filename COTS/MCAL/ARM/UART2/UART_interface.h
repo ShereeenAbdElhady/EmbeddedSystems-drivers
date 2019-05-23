@@ -77,16 +77,6 @@ extern u8 UART_u8RecieveStringSynch (u8*Copy_Pu8ArrayData , u8 Copy_u8DataLength
 void UART_VidRecieveStringAsynch(u8*Copy_Pu8ArrayData , u8 Copy_u8DataLength , void (*Copy_PVidFunCallback) (void));
 
 
-/****************************************************************************************************
- * Description:Function to Set the pointer to callback function with the address of the function
- *              Needed to be implemented by the ISR.
- * Outputs   : Error State
- * Inputs    : void (*Copy_PVidFunCallback) (void): pointer to callback function to set the pointer
- *             Value with the address of the function needed to be implemented by the ISR.
- ***************************************************************************************************/
-extern u8 UART_u8SetCallback (void (*Copy_PVidFunCallback) (void));
-
-
 /**************************************************************************************
  * Description: UART2 ISR which responsible for the transmission & reception of the rest
  *              of characters and after finishing sending & receiving  them

@@ -28,6 +28,8 @@ static void (*PVidFunCallback) (void) = NULL ;
 
 /*global variable for loop index used in asynchronous transmission*/
 static u8 Global_u8LoopIndexAsynch = 0;
+/*global variable for loop index used in asynchronous reception*/
+static u8 Global_u8RXLoopIndexAsynch = 0;
 
 /****** Driver Constraint*****/
 /*pointer to character to be used in asynchronous transmission      */
@@ -243,7 +245,7 @@ extern u8 UART_u8RecieveStringSynch (u8*Copy_Pu8ArrayData , u8 Copy_u8DataLength
  *************************************************************************************/
 void UART_VidRecieveStringAsynch(u8*Copy_Pu8ArrayData , u8 Copy_u8DataLength , void (*Copy_PVidFunCallback) (void))
 {
-	Global_u8LoopIndexAsynch = 0;
+	Global_u8RXLoopIndexAsynch = 0;
 	/*save the address in a static pointer to avoid dangling pointer (constraint)      */
 	Ptr_RXDataAsynch = Copy_Pu8ArrayData ;
 	/*save the data length to be used by the ISR                                       */
@@ -256,11 +258,11 @@ void UART_VidRecieveStringAsynch(u8*Copy_Pu8ArrayData , u8 Copy_u8DataLength , v
 	/*enable (read data register not empty interrupt) RXNE                             */
 	UART_VidEnableRXNEInterrupt ();
 
-//	if(Global_u8LoopIndexAsynch < Global_RxDataLength)
+	//if(Global_u8RXLoopIndexAsynch < Global_RxDataLength)
 	//{
-		//Ptr_RXDataAsynch[Global_u8LoopIndexAsynch] = UART_u32_DR;
+		//Ptr_RXDataAsynch[Global_u8RXLoopIndexAsynch] = UART_u32_DR;
 	//}
-	//return ;
+	return ;
 }
 
 
@@ -297,21 +299,24 @@ void USART2_IRQHandler(void)
 	/*check on the RX flag                                                                */
 	if ((BITCALC_GET_BIT(UART_u32_SR,UART_SR_RXNE_PIN)) == 1)
 	{
+		/*increment this index to receive the next character                              */
+		//Global_u8RXLoopIndexAsynch ++;
+
 		/*clear read data register not empty flag RXNE                                     */
 		UART_u32_SR &= (~(1 << UART_SR_RXNE_PIN));
-		if (Global_u8LoopIndexAsynch < Global_RxDataLength)
+
+		if (Global_u8RXLoopIndexAsynch < Global_RxDataLength)
 		{
-			Ptr_RXDataAsynch[Global_u8LoopIndexAsynch] = UART_u32_DR;
-			/*increment this index to receive the next character                              */
-			Global_u8LoopIndexAsynch ++;
+			Ptr_RXDataAsynch[Global_u8RXLoopIndexAsynch] = UART_u32_DR;
+			/*increment this index to receive the next character                         */
+			Global_u8RXLoopIndexAsynch ++;
 		}
 		else
 		{
-			Global_u8LoopIndexAsynch = 0;
-			/*clear read data register not empty flag RXNE                                     */
-			UART_u32_SR &= (~(1 << UART_SR_RXNE_PIN));
+			Global_u8RXLoopIndexAsynch = 0;
+			/*Disable receiver interrupt                                                */
 			UART_VidDisableRXNEInterrupt ();
-			/* ISR of transmission complete Function calling                              */
+			/* ISR of reception complete Function calling                              */
 			PVidFunCallback();
 		}
 	}
@@ -326,7 +331,7 @@ void USART2_IRQHandler(void)
  * Inputs    : void (*Copy_PVidFunCallback) (void): pointer to callback function to set the pointer
  *             Value with the address of the function needed to be implemented by the ISR.
  ***************************************************************************************************/
-extern u8 UART_u8SetCallback (void (*Copy_PVidFunCallback) (void))
+static u8 UART_u8SetCallback (void (*Copy_PVidFunCallback) (void))
 {
 	/* Local Variable indication for Error status                                            */
 	u8 Local_u8Error = STD_TYPES_u8_ERROR_OK;
