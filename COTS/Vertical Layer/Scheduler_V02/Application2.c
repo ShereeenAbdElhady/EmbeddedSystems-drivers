@@ -40,7 +40,7 @@ void APP2_VidInitialize(void)
 	//Task2.Periodicity = 2000;
 	//Task2.Priority = 1;
 	//Task2.Offset = 1000;
-	/*passing the address of task2(structure) to array of pointers to structures*/
+	/*passing the address of task2(structure) to array of structures*/
 	OS_u8CreateTask(&Task2);
 }
 

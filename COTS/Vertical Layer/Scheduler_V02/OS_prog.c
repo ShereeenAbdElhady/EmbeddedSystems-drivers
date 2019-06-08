@@ -26,7 +26,7 @@
 
 /* Queue of tasks in which we will register each task in the scheduler queue                            */
 /* creating array of Systasks(structures)                                                               */
-static SysTasks_type OS_ArrayPtrSysTasks[OS_u8_SCHEDULER_TASKS_NUM] ;
+static SysTasks_type OS_ArraySysTasks[OS_u8_SCHEDULER_TASKS_NUM] ;
 
 /*Modification in this version : we gonna set the flag only in the ISR instead of executing the whole  */
 /*Scheduler in the ISR to decrease the ISR time(handler mode time), and we gonna call the scheduler    */
@@ -68,7 +68,7 @@ extern void OS_VidStart(void)
 
 /********************************************************************************************************
  * Description: Function to enqueue task in the scheduler queue by inserting it's address
- *              in the array of pointers to Systasks and adjusting it's position in the array according
+ *              in the array of structures Systasks and adjusting it's position in the array according
  *              to it's priority.
  *              Also to set the time remains to execute by offset value to control the starting point
  *              of this  task.
@@ -82,12 +82,12 @@ extern u8 OS_u8CreateTask(const Task_type* Copy_PtrTask)
 	/*Priority of task must be less than the maximum number of tasks in the queue                      */
 	if ( (Copy_PtrTask != NULL) && ((Copy_PtrTask->Priority) < (OS_u8_SCHEDULER_TASKS_NUM)) )
 	{
-		/*storing the address of the new task in the array of pointers to tasks in it's index(priority)*/
-		OS_ArrayPtrSysTasks[Copy_PtrTask->Priority].Task =  Copy_PtrTask;
+		/*storing the address of the new task in the array of structures tasks in it's index(priority)*/
+		OS_ArraySysTasks[Copy_PtrTask->Priority].Task =  Copy_PtrTask;
 		/*We decrease the CPU load using offset method                                                 */
-		OS_ArrayPtrSysTasks[Copy_PtrTask->Priority].RemainTimeToExecute = ((Copy_PtrTask->Offset) / (OS_u16_SCHEDULER_TICK_TIME));
+		OS_ArraySysTasks[Copy_PtrTask->Priority].RemainTimeToExecute = ((Copy_PtrTask->Offset) / (OS_u16_SCHEDULER_TICK_TIME));
 		/*Change Task status to Active indication for the creation of this task                        */
-		OS_ArrayPtrSysTasks[Copy_PtrTask->Priority].TaskStatus = OS_u8_TASK_ACTIVE_STATUS ;
+		OS_ArraySysTasks[Copy_PtrTask->Priority].TaskStatus = OS_u8_TASK_ACTIVE_STATUS ;
 	}
 	else
 	{
@@ -113,10 +113,10 @@ extern u8 OS_u8Pause (u8 Copy_u8TimesOfPause ,const Task_type* Copy_PtrTask)
 	if ( (Copy_PtrTask != NULL) && ((Copy_PtrTask->Priority) < (OS_u8_SCHEDULER_TASKS_NUM)) )
 	{
 		/*if the task is already registered in the queue                                              */
-		if ((OS_ArrayPtrSysTasks[Copy_PtrTask->Priority].Task)!= (NULL))
+		if ((OS_ArraySysTasks[Copy_PtrTask->Priority].Task)!= (NULL))
 		{
 			/*Here we doubled remain time to execute time, to pause the task multiple of periodicity  */
-			OS_ArrayPtrSysTasks[Copy_PtrTask->Priority].RemainTimeToExecute = ( (Copy_u8TimesOfPause) * ((Copy_PtrTask->Periodicity) / (OS_u16_SCHEDULER_TICK_TIME)) );
+			OS_ArraySysTasks[Copy_PtrTask->Priority].RemainTimeToExecute = ( (Copy_u8TimesOfPause) * ((Copy_PtrTask->Periodicity) / (OS_u16_SCHEDULER_TICK_TIME)) );
 		}
 	}
 	else
@@ -142,12 +142,12 @@ extern u8 OS_u8Delete(const Task_type* Copy_PtrTask)
 	if ( (Copy_PtrTask != NULL) && ((Copy_PtrTask->Priority) < (OS_u8_SCHEDULER_TASKS_NUM)) )
 	{
 		/*if the task is already registered in the queue                                              */
-		if (OS_ArrayPtrSysTasks[Copy_PtrTask->Priority].Task != NULL)
+		if (OS_ArraySysTasks[Copy_PtrTask->Priority].Task != NULL)
 		{
 			/*Delete this Task by making it's place in the queue equal to NULL                       */
-			OS_ArrayPtrSysTasks[Copy_PtrTask->Priority].Task = NULL;
+			OS_ArraySysTasks[Copy_PtrTask->Priority].Task = NULL;
 			/*Change Task status to suppressed indication for the removal of this task               */
-			OS_ArrayPtrSysTasks[Copy_PtrTask->Priority].TaskStatus = OS_u8_TASK_SUPPRESSED_STATUS ;
+			OS_ArraySysTasks[Copy_PtrTask->Priority].TaskStatus = OS_u8_TASK_SUPPRESSED_STATUS ;
 		}
 	}
 	else
@@ -160,7 +160,7 @@ extern u8 OS_u8Delete(const Task_type* Copy_PtrTask)
 
 
 /********************************************************************************************************
- * Description: Function to call the scheduler if the OSFlag equals to one, based on the ISR descision
+ * Description: Function to call the scheduler if the OSFlag equals to one, based on the ISR decision
  *              Here the scheduler is in thread mode, so it can be interrupted.
  * Outputs   :  None
  * Inputs    :  None
@@ -194,23 +194,23 @@ static void OS_VidScheduler (void)
 	u8 Local_u8TaskIndex=0;
 	/*The scheduler will go through each task and check for it's remain time to execute                 */
 	/*If it is equal to zero it will be executed, if it is more than zero the scheduler will            */
-	/*decrement the remain time till it recheas zero                                                    */
+	/*decrement the remain time till it reaches zero                                                    */
 	for( Local_u8TaskIndex=0 ; Local_u8TaskIndex < OS_u8_SCHEDULER_TASKS_NUM ; Local_u8TaskIndex++)
 	{
 		/*if the task is already registered in the queue and it's status is active state                */
-		if ( (OS_ArrayPtrSysTasks[Local_u8TaskIndex].Task != NULL) && (OS_ArrayPtrSysTasks[Local_u8TaskIndex].TaskStatus == OS_u8_TASK_ACTIVE_STATUS) )
+		if ( (OS_ArraySysTasks[Local_u8TaskIndex].Task != NULL) && (OS_ArraySysTasks[Local_u8TaskIndex].TaskStatus == OS_u8_TASK_ACTIVE_STATUS) )
 		{
 			/*call the runnable task if it meets it's periodicity and offset time                        */
-			if (OS_ArrayPtrSysTasks[Local_u8TaskIndex].RemainTimeToExecute == 0)
+			if (OS_ArraySysTasks[Local_u8TaskIndex].RemainTimeToExecute == 0)
 			{
 				/*set the remain time with the periodicity of task                                       */
-				OS_ArrayPtrSysTasks[Local_u8TaskIndex].RemainTimeToExecute = ((OS_ArrayPtrSysTasks[Local_u8TaskIndex].Task->Periodicity) / (OS_u16_SCHEDULER_TICK_TIME));
+				OS_ArraySysTasks[Local_u8TaskIndex].RemainTimeToExecute = ((OS_ArraySysTasks[Local_u8TaskIndex].Task->Periodicity) / (OS_u16_SCHEDULER_TICK_TIME));
 				/* Call the Runnable Task                                                                */
-				OS_ArrayPtrSysTasks[Local_u8TaskIndex].Task->Runnable();
+				OS_ArraySysTasks[Local_u8TaskIndex].Task->Runnable();
 			}
 			/*decrement the remain time we decrement it by tick till it reaches zero                         */
 			/*kda kol remain b tickya f ana 3wza agy l scheduler da 3dd mn l ticks l7d ma awsl ll period time*/
-			OS_ArrayPtrSysTasks[Local_u8TaskIndex].RemainTimeToExecute --;
+			OS_ArraySysTasks[Local_u8TaskIndex].RemainTimeToExecute --;
 		}
 	}
 	return ;
@@ -231,7 +231,7 @@ static void OS_VidSetOsFlag (void)
 	}
 	/* else
 	 * {   this means that the (CPU load > 100 %)
-	 * as the timer's ISR comes & still the scheduler not finshed it's work yet
+	 * as the timer's ISR comes & still the scheduler not finished it's work yet
 	 * tick time > execution time
 	 * }*/
 }

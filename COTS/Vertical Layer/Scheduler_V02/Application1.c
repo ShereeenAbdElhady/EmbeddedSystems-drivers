@@ -40,7 +40,7 @@ void APP1_VidInitialize(void)
 	//Task1.Periodicity   = 1000;
 	//Task1.Priority = 0;
 	//Task1.Offset = 1000;
-	/*passing the address of task1(structure) to array of pointers to structures*/
+	/*passing the address of task1(structure) to array of  structures*/
 	OS_u8CreateTask(&Task1);
 	//OS_u8Delete(&Task1);
 }
