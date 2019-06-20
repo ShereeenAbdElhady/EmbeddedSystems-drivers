@@ -62,6 +62,7 @@ extern void UART_VidTransmitStringAsynch (const u8*Copy_Pu8ArrayData , void (*Co
 extern u8 UART_u8RecieveStringSynch (u8*Copy_Pu8ArrayData , u8 Copy_u8DataLength );
 
 
+
 /**************************************************************************************
  * Description: Asynchronous function to receive a string using interrupts
  *              without blocking the processor.
@@ -74,7 +75,7 @@ extern u8 UART_u8RecieveStringSynch (u8*Copy_Pu8ArrayData , u8 Copy_u8DataLength
  *             Value with the address of the function needed to be implemented by the ISR
  *             u8 Copy_u8DataLength: length of data
  *************************************************************************************/
-void UART_VidRecieveStringAsynch(u8*Copy_Pu8ArrayData , u8 Copy_u8DataLength , void (*Copy_PVidFunCallback) (void));
+extern void UART_VidRecieveStringAsynch(u8*Copy_Pu8ArrayData , u8 Copy_u8DataLength , void (*Copy_PVidFunCallback) (void));
 
 
 /**************************************************************************************

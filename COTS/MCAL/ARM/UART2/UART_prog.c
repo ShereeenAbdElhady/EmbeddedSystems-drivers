@@ -21,10 +21,11 @@
 #include "../include/UART_private.h"
 #include "../include/UART_config.h"
 
-/* pointer to function, pointer will carry the address of the function wanted to be implemented by the ISR                     */
-/* Initialize the pointer with Null in the beginning to avoid this pointer from garbage value and implementation of wrong code */
-/* Global & Static to be seen within this file only                                                                            */
-static void (*PVidFunCallback) (void) = NULL ;
+/* Array of pointers to function, each pointer will carry the address of the function wanted to be implemented by the ISR           */
+/* Initialize all the pointers with Null in the beginning to avoid this pointer from garbage value and implementation of wrong code */
+/* Global & Static to be seen within this file only                                                                                 */
+static void (*PVidFunCallback[UART_NUM_OF_INTERRUPTS]) (void) = {NULL , NULL};
+
 
 /*global variable for loop index used in asynchronous transmission*/
 static u8 Global_u8LoopIndexAsynch = 0;
@@ -40,8 +41,9 @@ static u8 Global_u8RXLoopIndexAsynch = 0;
 /*to a dangling pointer so we defined this ptr to avoid this mistake*/
 /*And this is considered to be a constraint in this driver          */
 static const u8 *Ptr_TXDataAsynch;
-static u8 *Ptr_RXDataAsynch;
+static volatile u8 *Ptr_RXDataAsynch;
 static u8 Global_RxDataLength;
+
 
 
 /*******************************************************************************
@@ -164,21 +166,24 @@ extern u8 UART_u8TransmitStringSynch (const u8*Copy_Pu8ArrayData)
  * Inputs    : const u8*Copy_Pu8ArrayData : pointer to constant array of characters
  *             void (*Copy_PVidFunCallback) (void) : pointer to callback function to set the pointer
  *             Value with the address of the function needed to be implemented by the ISR
+ *             u8 Copy_u8DataLength: length of data
  *************************************************************************************/
 extern void UART_VidTransmitStringAsynch (const u8*Copy_Pu8ArrayData , void (*Copy_PVidFunCallback) (void))
 {
 	Global_u8LoopIndexAsynch = 0;
 	/*save the address in a static pointer to avoid dangling pointer (constraint)      */
 	Ptr_TXDataAsynch = Copy_Pu8ArrayData;
+
 	/*callback function calling and send to it the address of the function to implement*/
-	UART_u8SetCallback (Copy_PVidFunCallback);
-	/*clear transmission complete TXEflag                                              */
-	UART_u32_SR &= (~(1 << UART_SR_TXE_PIN ));
-	/*enable TXE interrupt                                                              */
+	UART_u8SetCallback (UART_u8_INDEX_TX ,Copy_PVidFunCallback);
+	/*clear transmission complete TXEflag (cleared by hardware)                        */
+	/*enable TXE interrupt                                                             */
 	UART_VidEnableTXEInterrupt ();
-	if(Ptr_TXDataAsynch[Global_u8LoopIndexAsynch] != '\0')
+	if( Ptr_TXDataAsynch[Global_u8LoopIndexAsynch] != '\0' )
 	{
 		UART_u32_DR = Ptr_TXDataAsynch[Global_u8LoopIndexAsynch];
+		/*increment this index to transmit the next character                            */
+		Global_u8LoopIndexAsynch ++;
 	}
 	return ;
 }
@@ -243,7 +248,7 @@ extern u8 UART_u8RecieveStringSynch (u8*Copy_Pu8ArrayData , u8 Copy_u8DataLength
  *             Value with the address of the function needed to be implemented by the ISR
  *             u8 Copy_u8DataLength: length of data
  *************************************************************************************/
-void UART_VidRecieveStringAsynch(u8*Copy_Pu8ArrayData , u8 Copy_u8DataLength , void (*Copy_PVidFunCallback) (void))
+extern void UART_VidRecieveStringAsynch(u8*Copy_Pu8ArrayData , u8 Copy_u8DataLength , void (*Copy_PVidFunCallback) (void))
 {
 	Global_u8RXLoopIndexAsynch = 0;
 	/*save the address in a static pointer to avoid dangling pointer (constraint)      */
@@ -251,17 +256,12 @@ void UART_VidRecieveStringAsynch(u8*Copy_Pu8ArrayData , u8 Copy_u8DataLength , v
 	/*save the data length to be used by the ISR                                       */
 	Global_RxDataLength = Copy_u8DataLength;
 	/*callback function calling and send to it the address of the function to implement*/
-	UART_u8SetCallback (Copy_PVidFunCallback);
+	UART_u8SetCallback (UART_u8_INDEX_RX, Copy_PVidFunCallback);
 
 	/*clear read data register not empty flag RXNE                                     */
 	UART_u32_SR &= (~(1 << UART_SR_RXNE_PIN));
 	/*enable (read data register not empty interrupt) RXNE                             */
 	UART_VidEnableRXNEInterrupt ();
-
-	//if(Global_u8RXLoopIndexAsynch < Global_RxDataLength)
-	//{
-		//Ptr_RXDataAsynch[Global_u8RXLoopIndexAsynch] = UART_u32_DR;
-	//}
 	return ;
 }
 
@@ -279,36 +279,35 @@ void USART2_IRQHandler(void)
 	/*we will check on the TX & RX flags using if not if else if to be sure that we TX & RX in the same time in the ISR*/
 	if ((BITCALC_GET_BIT(UART_u32_SR,UART_SR_TXE_PIN)) == 1)
 	{
-		/*increment this index to transmit the next character                            */
-		Global_u8LoopIndexAsynch ++;
-		/*clear transmission complete TXE flag                                            */
-		UART_u32_SR &= (~(1 << UART_SR_TXE_PIN));
-		if(Ptr_TXDataAsynch[Global_u8LoopIndexAsynch] != '\0')
+
+		/*clear transmission complete TXE flag (cleared by hardware)                     */
+
+        /*if string not equal NULL                                                       */
+		if( Ptr_TXDataAsynch[Global_u8LoopIndexAsynch] != '\0')
 		{
 			UART_u32_DR = Ptr_TXDataAsynch[Global_u8LoopIndexAsynch];
+			/*increment this index to transmit the next character                         */
+			Global_u8LoopIndexAsynch ++;
 		}
 		else
 		{
 			Global_u8LoopIndexAsynch = 0;
 			UART_VidDisableTXEInterrupt ();
-			/* ISR of transmission complete Function calling                              */
-			PVidFunCallback();
+			/* ISR of transmission complete Function calling                            */
+			/* ISR of TX Function calling                                               */
+			PVidFunCallback[UART_u8_INDEX_TX] ();
 		}
 	}
 
-	/*check on the RX flag                                                                */
+	/*check on the RX flag                                                              */
 	if ((BITCALC_GET_BIT(UART_u32_SR,UART_SR_RXNE_PIN)) == 1)
 	{
-		/*increment this index to receive the next character                              */
-		//Global_u8RXLoopIndexAsynch ++;
-
-		/*clear read data register not empty flag RXNE                                     */
-		UART_u32_SR &= (~(1 << UART_SR_RXNE_PIN));
-
+		/*clear read data register not empty flag RXNE                                  */
+		//UART_u32_SR &= (~(1 << UART_SR_RXNE_PIN));
 		if (Global_u8RXLoopIndexAsynch < Global_RxDataLength)
 		{
 			Ptr_RXDataAsynch[Global_u8RXLoopIndexAsynch] = UART_u32_DR;
-			/*increment this index to receive the next character                         */
+			/*increment this index to receive the next character                        */
 			Global_u8RXLoopIndexAsynch ++;
 		}
 		else
@@ -316,13 +315,13 @@ void USART2_IRQHandler(void)
 			Global_u8RXLoopIndexAsynch = 0;
 			/*Disable receiver interrupt                                                */
 			UART_VidDisableRXNEInterrupt ();
-			/* ISR of reception complete Function calling                              */
-			PVidFunCallback();
+			/* ISR of reception complete Function calling                               */
+			/* ISR of RX Function calling                                               */
+			PVidFunCallback[UART_u8_INDEX_RX] ();
 		}
 	}
 	return ;
 }
-
 
 /****************************************************************************************************
  * Description:Function to Set the pointer to callback function with the address of the function
@@ -330,24 +329,26 @@ void USART2_IRQHandler(void)
  * Outputs   : Error State
  * Inputs    : void (*Copy_PVidFunCallback) (void): pointer to callback function to set the pointer
  *             Value with the address of the function needed to be implemented by the ISR.
+ *             Copy_u8INTNb             : Interrupt Index number
  ***************************************************************************************************/
-static u8 UART_u8SetCallback (void (*Copy_PVidFunCallback) (void))
+static u8 UART_u8SetCallback (u8 Copy_u8INTIndex , void (*Copy_PVidFunCallback) (void))
 {
 	/* Local Variable indication for Error status                                            */
 	u8 Local_u8Error = STD_TYPES_u8_ERROR_OK;
 	/* Input arguments validation                                                            */
-	if (Copy_PVidFunCallback == NULL)
+	if (Copy_u8INTIndex >= UART_NUM_OF_INTERRUPTS)
 	{
 		Local_u8Error = STD_TYPES_u8_ERROR_NOK;
 	}
 	else
 	{
 		/* Set the pointer with address of the function needed to be implemented by the ISR  */
-		PVidFunCallback = Copy_PVidFunCallback;
+		PVidFunCallback[Copy_u8INTIndex] = Copy_PVidFunCallback;
 	}
 	/* Function Return                                                                       */
 	return Local_u8Error;
 }
+
 
 
 /*******************************************************************************
@@ -361,6 +362,7 @@ static void UART_VidDisableTXEInterrupt (void)
 	UART_u32_CR1 &= (~(1 << UART_CR1_u8_TXEIE_PIN));
 	return ;
 }
+
 
 /*******************************************************************************
  * Description: private function to enable the transmission complete interrupt.

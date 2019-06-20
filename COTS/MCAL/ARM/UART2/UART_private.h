@@ -82,17 +82,24 @@
 #define UART_u8_0_5_STOP_BIT   28
 #define UART_u8_2_STOP_BIT     29
 #define UART_u8_1_5_STOP_BIT   30
+/*Pointers to function number definition                                                                       */
+#define UART_NUM_OF_INTERRUPTS  2
+/*Tx ptr index                                                                                                 */
+#define UART_u8_INDEX_TX        0
+/*Rx ptr index                                                                                                 */
+#define UART_u8_INDEX_RX        1
 
                      /******* private functions prototypes *************/
 
 /****************************************************************************************************
- * Description:Function to Set the pointer to callback function with the address of the function
- *              Needed to be implemented by the ISR.
- * Outputs   : Error State
- * Inputs    : void (*Copy_PVidFunCallback) (void): pointer to callback function to set the pointer
- *             Value with the address of the function needed to be implemented by the ISR.
- ***************************************************************************************************/
-static u8 UART_u8SetCallback (void (*Copy_PVidFunCallback) (void));
+* Description:Function to Set the pointer to callback function with the address of the function
+*              Needed to be implemented by the ISR.
+* Outputs   : Error State
+* Inputs    : void (*Copy_PVidFunCallback) (void): pointer to callback function to set the pointer
+*             Value with the address of the function needed to be implemented by the ISR.
+*             Copy_u8INTNb             : Interrupt Index number
+***************************************************************************************************/
+static u8 UART_u8SetCallback (u8 Copy_u8INTIndex , void (*Copy_PVidFunCallback) (void));
 
 
 /*******************************************************************************
