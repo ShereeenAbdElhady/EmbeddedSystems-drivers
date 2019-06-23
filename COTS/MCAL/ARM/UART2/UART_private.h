@@ -82,11 +82,11 @@
 #define UART_u8_0_5_STOP_BIT   28
 #define UART_u8_2_STOP_BIT     29
 #define UART_u8_1_5_STOP_BIT   30
-/*Pointers to function number definition                                                                       */
+/*Pointers to function numbers definition */
 #define UART_NUM_OF_INTERRUPTS  2
-/*Tx ptr index                                                                                                 */
+/*Tx ptr index                            */
 #define UART_u8_INDEX_TX        0
-/*Rx ptr index                                                                                                 */
+/*Rx ptr index                            */
 #define UART_u8_INDEX_RX        1
 
                      /******* private functions prototypes *************/

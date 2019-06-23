@@ -43,7 +43,7 @@ static u8 Global_u8RXLoopIndexAsynch = 0;
 static const u8 *Ptr_TXDataAsynch;
 static volatile u8 *Ptr_RXDataAsynch;
 static u8 Global_RxDataLength;
-
+u8 Global_IsReceivingFlag=0;
 
 
 /*******************************************************************************
@@ -251,17 +251,21 @@ extern u8 UART_u8RecieveStringSynch (u8*Copy_Pu8ArrayData , u8 Copy_u8DataLength
 extern void UART_VidRecieveStringAsynch(u8*Copy_Pu8ArrayData , u8 Copy_u8DataLength , void (*Copy_PVidFunCallback) (void))
 {
 	Global_u8RXLoopIndexAsynch = 0;
-	/*save the address in a static pointer to avoid dangling pointer (constraint)      */
-	Ptr_RXDataAsynch = Copy_Pu8ArrayData ;
-	/*save the data length to be used by the ISR                                       */
-	Global_RxDataLength = Copy_u8DataLength;
-	/*callback function calling and send to it the address of the function to implement*/
-	UART_u8SetCallback (UART_u8_INDEX_RX, Copy_PVidFunCallback);
+	if (Global_IsReceivingFlag == 0)
+	{
+		/*save the address in a static pointer to avoid dangling pointer (constraint)      */
+		Ptr_RXDataAsynch = Copy_Pu8ArrayData ;
+		/*save the data length to be used by the ISR                                       */
+		Global_RxDataLength = Copy_u8DataLength;
+		/*callback function calling and send to it the address of the function to implement*/
+		UART_u8SetCallback (UART_u8_INDEX_RX, Copy_PVidFunCallback);
 
-	/*clear read data register not empty flag RXNE                                     */
-	UART_u32_SR &= (~(1 << UART_SR_RXNE_PIN));
-	/*enable (read data register not empty interrupt) RXNE                             */
-	UART_VidEnableRXNEInterrupt ();
+		/*clear read data register not empty flag RXNE                                     */
+		UART_u32_SR &= (~(1 << UART_SR_RXNE_PIN));
+		/*enable (read data register not empty interrupt) RXNE                             */
+		UART_VidEnableRXNEInterrupt ();
+		Global_IsReceivingFlag=1;
+	}
 	return ;
 }
 
@@ -280,9 +284,8 @@ void USART2_IRQHandler(void)
 	if ((BITCALC_GET_BIT(UART_u32_SR,UART_SR_TXE_PIN)) == 1)
 	{
 
-		/*clear transmission complete TXE flag (cleared by hardware)                     */
+		/*clear transmission complete TXE flag                                            */
 
-        /*if string not equal NULL                                                       */
 		if( Ptr_TXDataAsynch[Global_u8LoopIndexAsynch] != '\0')
 		{
 			UART_u32_DR = Ptr_TXDataAsynch[Global_u8LoopIndexAsynch];
@@ -293,21 +296,21 @@ void USART2_IRQHandler(void)
 		{
 			Global_u8LoopIndexAsynch = 0;
 			UART_VidDisableTXEInterrupt ();
-			/* ISR of transmission complete Function calling                            */
-			/* ISR of TX Function calling                                               */
+			/* ISR of transmission complete Function calling                              */
+			/* ISR of TX Function calling                  */
 			PVidFunCallback[UART_u8_INDEX_TX] ();
 		}
 	}
 
-	/*check on the RX flag                                                              */
-	if ((BITCALC_GET_BIT(UART_u32_SR,UART_SR_RXNE_PIN)) == 1)
+	/*check on the RX flag                                                                */
+	if (((BITCALC_GET_BIT(UART_u32_SR,UART_SR_RXNE_PIN)) == 1 ) && (Global_IsReceivingFlag == 1))
 	{
-		/*clear read data register not empty flag RXNE                                  */
+		/*clear read data register not empty flag RXNE                                     */
 		//UART_u32_SR &= (~(1 << UART_SR_RXNE_PIN));
 		if (Global_u8RXLoopIndexAsynch < Global_RxDataLength)
 		{
 			Ptr_RXDataAsynch[Global_u8RXLoopIndexAsynch] = UART_u32_DR;
-			/*increment this index to receive the next character                        */
+			/*increment this index to receive the next character                         */
 			Global_u8RXLoopIndexAsynch ++;
 		}
 		else
@@ -315,8 +318,9 @@ void USART2_IRQHandler(void)
 			Global_u8RXLoopIndexAsynch = 0;
 			/*Disable receiver interrupt                                                */
 			UART_VidDisableRXNEInterrupt ();
-			/* ISR of reception complete Function calling                               */
-			/* ISR of RX Function calling                                               */
+			Global_IsReceivingFlag=0;
+			/* ISR of reception complete Function calling                              */
+			/* ISR of RX Function calling                  */
 			PVidFunCallback[UART_u8_INDEX_RX] ();
 		}
 	}
@@ -362,7 +366,6 @@ static void UART_VidDisableTXEInterrupt (void)
 	UART_u32_CR1 &= (~(1 << UART_CR1_u8_TXEIE_PIN));
 	return ;
 }
-
 
 /*******************************************************************************
  * Description: private function to enable the transmission complete interrupt.
